@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
 const { query } = require('express');
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -24,18 +24,16 @@ client.connect(err => {
 
 
     app.get('/nearbyResturants', (req, res) => {
-        resturantCollection.find({})
+        resturantCollection.find({distance:{$lte:5}})
             .toArray((error, resturants) => {
-                const filtered = resturants.filter(resturant => resturant.distance <= 5)
-                res.send(filtered);
+                res.send(resturants);
             })
     })
 
     app.get('/topRatedResturants', (req, res) => {
-        resturantCollection.find({})
+        resturantCollection.find({ratings:{$gte:4.5}})
             .toArray((error, resturants) => {
-                const filtered = resturants.filter(resturant => resturant.ratings >= 4.5);
-                res.send(filtered);
+                res.send(resturants);
             })
     })
 
@@ -45,6 +43,7 @@ client.connect(err => {
             resturantCollection.find({ name: { $regex: search } })
                 .toArray((error, resturants) => {
                     res.send(resturants);
+                    console.log(error);
                 })
         }
         else {
@@ -69,7 +68,7 @@ client.connect(err => {
         else if(searchFood) {
             foodsCollection.find(
                 {
-                    name: { $regex: searchFood }
+                    name: /^searchFood/
                 }
     
             )
